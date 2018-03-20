@@ -1,8 +1,8 @@
-# skyscanner search [![Build Status]()]()
-###Iterative search on Skyscanner using Selenium
+# skyscanner search
+### Iterative search on Skyscanner using Selenium
 
 
-###### Latest version support RN44
+###### Dependecies
 
 * Selenium
 * Joda-time
