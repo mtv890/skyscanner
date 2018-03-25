@@ -21,19 +21,18 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 public class Main {
 	public static void main(String[] args) throws InterruptedException {
 		String origin = "buea";
-		List<String> destinations = new ArrayList<String>(Arrays.asList("rome","mila","barc","lond","veni","madr"/*,"flor","pisa","muni","zrh","pari",*/));
+		List<String> destinations = new ArrayList<String>(Arrays.asList("rome"/*,"mila","barc","lond","veni","madr","flor","pisa","muni","zrh","pari",*/));
 		Iterator<String> iterator = destinations.iterator();
-		System.setProperty("webdriver.gecko.driver", "C:\\Users\\Mariano\\workspace\\Selenium test\\geckodriver.exe");
-        LocalDate initialDate = new LocalDate(
-        		2018,8,25
-        );
-        LocalDate endDate = new LocalDate(
-        		2018,10,15
-        );
+
+        LocalDate initialDate = new LocalDate(2018,9,10);
+        LocalDate endDate = new LocalDate(2018,9,20);
         Integer numberOfDaysA = 24;
         Integer numberOfDaysB = 0;
         Integer flexibleDays = 4; // 0 for fixed Dates
-
+        Options options = new Options().setMarket("AR");
+        Boolean roundTrip = true;
+        
+		System.setProperty("webdriver.gecko.driver", "C:\\Users\\Mariano\\workspace\\Selenium test\\geckodriver.exe");
 		WebDriver driver = new FirefoxDriver();
 		WriteFile logFile = new WriteFile();
 		WebDriverWait wait = new WebDriverWait(driver, 60);
@@ -46,24 +45,27 @@ public class Main {
 	      		//LocalDate middleDate = departureDate.plusDays(numberOfDaysA);
 	      		LocalDate maxReturnDate = departureDate.plusDays(numberOfDaysA+numberOfDaysB); 
 	      		for (LocalDate returnDate = maxReturnDate.minusDays(flexibleDays) ; returnDate.isBefore(maxReturnDate.plusDays(1)); returnDate = returnDate.plusDays(1)) {
-      				driver.get(
-      						"https://www.skyscanner.com/transport/flights/buea/"
-	      						+ destination
-	      						+ "/" 
-	      						+ departureDate.toString("yyMMdd")
-	      						+ "/" 
-	      						+ returnDate.toString("yyMMdd")
-	      						+ "?adults=1&children=0&adultsv2=1&childrenv2=&infants=0&cabinclass=economy&rtn=1&preferdirects=false&outboundaltsenabled=false&inboundaltsenabled=false&ref=home&market=AR&locale=es-AR&currency=ARS#results"
-	      				
-	      					/*	"https://www.espanol.skyscanner.com/transporte/d/buea/"
-	      						+ departureDate.toString("yyyy-MM-dd")
-	      						+ "/nyca/nyca/"
-	      						+ middleDate.toString("yyyy-MM-dd")
-	      						+ "/tyoa/tyoa/"
-	      						+ returnDate.toString("yyyy-MM-dd")
-	      						+ "/buea?adults=1&children=0&adultsv2=1&childrenv2=&infants=0&cabinclass=economy&market=US&locale=es-AR&currency=ARS#results"
-	      						*/
-	      			);
+	      			driver.manage().deleteAllCookies();
+	      			if(roundTrip) {
+	      				driver.get(
+	      					"https://www.skyscanner.com/transport/flights/buea/"
+		      					+ destination
+		      					+ "/" 
+		      					+ departureDate.toString("yyMMdd")
+		      					+ "/" 
+		      					+ returnDate.toString("yyMMdd")
+		      					+ options
+		      			);
+	      			} else {
+	      				driver.get(
+	  						"https://www.skyscanner.com/transport/d/buea/"
+		  						+ departureDate.toString("yyyy-MM-dd")
+		  						+ "/rome/veni/"
+		  						+ returnDate.toString("yyyy-MM-dd")
+		  						+ "/buea"
+		  						+ options
+  						);
+	      			}
 	      			text = origin + "->" + destination
 	      				 + " from " + departureDate.toString("yy-MM-dd")
 	      				 + " to " + returnDate.toString("yy-MM-dd")
@@ -80,17 +82,17 @@ public class Main {
 	      				elem = driver.findElement(By.cssSelector("#fqs-tabs > table > tbody > tr > td:nth-child(2) > button > span.fqs-price"));
 	      				text += elem.getAttribute("innerText") + "\r\n";	
 	    			} catch (Exception e) {
-	      				 e.printStackTrace();
 	      				 try {
 	      					if ( null != driver.findElement(By.id("distilCaptchaForm"))) {
 	      						text += "Bot detected :/" + "\r\n";
+	      						Thread.sleep(5000);
 	      					} else {
-	      						text += "Time Out! :@" + "\r\n";
+	      						text += "Time Out! :@" + "\r\n"; //unreachable
 	      					}
 	      				 } catch (Exception e1) {
-	      					e1.printStackTrace();
 	      					text += "Time Out2! :@" + "\r\n";
 	      				 }
+		      			returnDate = returnDate.minusDays(1);
 	      			} finally {
 	   		      		logFile.addText(text);
 	      			}	
